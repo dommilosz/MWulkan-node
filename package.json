@@ -1,0 +1,29 @@
+{
+  "name": "MWulkan",
+  "version": "1.0.0",
+  "main": "UI/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js",
+    "debug": "node main.js --inspect=5858",
+    "start-el": "electron ./main-ui.js",
+    "debug-el": "electron ./main-ui --inspect=5858"
+  },
+  "author": "",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "ejs": "^3.1.2",
+    "ejs-electron": "^2.0.3",
+    "electron": "^8.2.5",
+    "jquery": "^3.5.1",
+    "native-crypto": "^1.8.1",
+    "node-forge": "^0.9.1",
+    "puppeteer": "^3.0.4",
+    "save": "^2.4.0",
+    "subtle-crypto": "0.0.0",
+    "uuid": "^8.0.0",
+    "webcrypto": "^0.1.1",
+    "webcrypto-core": "^1.1.1"
+  }
+}

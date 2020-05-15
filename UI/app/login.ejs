@@ -1,0 +1,31 @@
+<link
+type="text/css"
+rel="stylesheet"
+href="./style.css"
+/>
+<div id="login" class="display-container">
+    <h1>Login</h1>
+    <input type="text" placeholder="TOKEN" id="inp_token" /><br />
+    <input type="text" placeholder="PIN" id="inp_pin" /><br />
+    <input
+        type="text"
+        placeholder="SYMBOL"
+        id="inp_symbol"
+    /><br /><br />
+
+    <input
+        type="button"
+        class="action_button"
+        value="SEND"
+        id="SEND_BTN"
+        onclick="LogIn()"
+    />
+    <input
+        type="button"
+        class="action_button"
+        value="BACK"
+        id="BACK_BTN"
+        onclick="ChangeUI('main')"
+    />
+</div>
+<script src="./login.js"></script>
