@@ -9,8 +9,8 @@ const loggerutil    = require('../loggerutil');
 const SuccesLogger  = new loggerutil('%c[MWULKAN]','color: #00ff4c; font-weight: bold')
 const ErrorLogger  = new loggerutil('%c[MWULKAN]','color: red; font-weight: bold')
 
-JSON_RESP = {};
-JSON_USERS = {};
+JSON_RESP = [];
+JSON_USERS = [];
 USERS_ARR = [];
 Timetables =[];
 SLOWNIKI = [];
