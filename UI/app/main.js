@@ -230,16 +230,13 @@ function Render() {
 
 			html_oceny += `
 		<div class="oc_item" id='s_${el[0].IdPrzedmiot.Kod}'>
-			<div class="oc_item_item small"><div class='align-middle'>${el[0].IdPrzedmiot.Nazwa}</div></div>
+			<div class="oc_item_item small"><div class='align-middle' style='font-size: 15px;'>${el[0].IdPrzedmiot.Nazwa}</div></div>
 			<div class="oc_item_item big" style='justify-content:left;'><pre class='align-middle' style='margin-left: 10px;'>${wpisy}</pre></div>
 			<div class="oc_item_item small"><div class='align-middle'>5</div></div>
 		</div>
 		`;
 		});
 		document.getElementsByClassName("oc_items")[0].innerHTML = html_oceny;
-		document.querySelectorAll(".oc_item").forEach((el) => {
-			fitText(el.querySelector(".small"), 0.9);
-		});
 	} catch {}
 }
 
