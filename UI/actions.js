@@ -13,45 +13,60 @@ ipcMain.on("login", (args, token, pin, symbol) => {
 			try{
 				fs.mkdirSync('./Data/')
 			}catch{}
+			try{
+				fs.mkdirSync('./Data/auth')
+			}catch{}
+			accid = 0;
+			try{
+				files = fs.readdirSync('./Data/auth');
+				accid = files.length;
+			}catch{accid = 0;}
+			try{
+				fs.mkdirSync(`./Data/auth/${accid}`)
+			}catch{}
 			fs.writeFileSync(
-				"./Data/auth.tk",
+				`./Data/auth/${accid}/auth.tk`,
 				JSON.stringify(JSON_RESP),
 				function () {}
 			);
-			args.sender.send("login-result", JSON_RESP);
+			args.sender.send("login-result",accid);
 		} else {
-			args.sender.send("login-result", { error: JSON_RESP2 });
+			
 		}
 	} catch (ex) {
-		args.sender.send("login-result", { error: ex });
+
 	}
 });
 
-ipcMain.on("getUsers", (args, json) => {
+ipcMain.on("getUsers", (args, json, accid) => {
 	try {
-		API.GetUsers(json).then(r=>{
+		API.GetUsers(json[accid]).then(r=>{
 			if (r.Data) {
 				try{
 					fs.mkdirSync('./Data/')
 				}catch{}
 				fs.writeFileSync(
-					"./Data/users.dt",
+					`./Data/auth/${accid}/users.dt`,
 					JSON.stringify(r),
 					function () {}
 				);
-				args.sender.send("getUsers-result", r);
+				args.sender.send("result");
+				
 			} else {
-				args.sender.send("getUsers-result", { error: r});
+				
 			}
 		});
 	} catch (ex) {
-		args.sender.send("getUsers-result", { error: ex });
+
 	}
 });
 
 ipcMain.on("getTimetable", (args, json,userjson,date,id) => {
 	try {
-		API.GetTimetable(json,userjson,id,date).then(r=>{
+		idf = id.split('#');
+		seljson = json[idf[0]];
+		seluserjson = userjson[idf[0]]
+		API.GetTimetable(seljson,seluserjson,id,date).then(r=>{
 			if (r.Data) {
 				try{
 					fs.mkdirSync('./Data/')
@@ -67,73 +82,88 @@ ipcMain.on("getTimetable", (args, json,userjson,date,id) => {
 					JSON.stringify(r),
 					function () {}
 				);
-				args.sender.send("getTimetable-result", r);
+				args.sender.send("result");
 			} else {
-				args.sender.send("getTimetable-result", { error: r});
+				
 			}
 		});
 	} catch (ex) {
-		args.sender.send("getTimetable-result", { error: ex });
+
 	}
 });
 
 ipcMain.on("getOceny", (args, json,userjson,id) => {
 	try {
-		API.GetOceny(json,userjson,id).then(r=>{
+		idf = id.split('#');
+		seljson = json[idf[0]];
+		seluserjson =userjson[idf[0]] ;
+		API.GetOceny(seljson,seluserjson,idf[1]).then(r=>{
+			idf = id.split('#');
 			if (r.Data) {
 				try{
 					fs.mkdirSync('./Data/')
 				}catch{}
 				try{
-					fs.mkdirSync('./Data/usr')
+					fs.mkdirSync('./Data/auth')
 				}catch{}
 				try{
-					fs.mkdirSync(`./Data/usr/${id}`)
+					fs.mkdirSync(`./Data/auth/${idf[0]}`)
+				}catch{}
+				try{
+					fs.mkdirSync(`./Data/auth/${idf[0]}/${idf[1]}`)
 				}catch{}
 				fs.writeFileSync(
-					`./Data/usr/${id}/oceny.dt`,
+					`./Data/auth/${idf[0]}/${idf[1]}/oceny.dt`,
 					JSON.stringify(r),
 					function () {}
 				);
-				args.sender.send("getOceny-result", r,id);
+				args.sender.send("result");
 			} else {
-				args.sender.send("getOceny-result", { error: r});
+				
 			}
 		});
 	} catch (ex) {
-		args.sender.send("getOceny-result", { error: ex });
+		
 	}
 });
 
 ipcMain.on("getSlowniki", (args, json, usersjson, userid) => {
 	try {
+		idf = userid.split('#')
 		try{
-			data = JSON.parse(fs.readFileSync(`./Data/usr/${userid}/slowniki.dt`).toString('utf-8'))
-			args.sender.send("getSlowniki-result", data,userid);
+			data = JSON.parse(fs.readFileSync(`./Data/auth/${idf[0]}/${idf[1]}/slowniki.dt`))
+			args.sender.send("result");
 		}catch{
-		API.GetSlowniki(json,usersjson,userid).then(r=>{
+		seljson = json[idf[0]];
+		selusersjson =usersjson[idf[0]] ;
+		API.GetSlowniki(seljson,selusersjson,idf[1]).then(r=>{
 			if (r.TimeKey) {
 				try{
 					fs.mkdirSync('./Data/')
 				}catch{}
 				try{
-					fs.mkdirSync('./Data/usr')
+					fs.mkdirSync('./Data/auth')
 				}catch{}
 				try{
-					fs.mkdirSync(`./Data/usr/${userid}`)
+					fs.mkdirSync(`./Data/auth/${idf[0]}`)
+				}catch{}
+				try{
+					fs.mkdirSync(`./Data/auth/${idf[0]}/${idf[1]}`)
 				}catch{}
 				fs.writeFileSync(
-					`./Data/usr/${userid}/slowniki.dt`,
+					`./Data/auth/${idf[0]}/${idf[1]}/slowniki.dt`,
 					JSON.stringify(r),
 					function () {}
 				);
-				args.sender.send("getSlowniki-result", r,userid);
+				
+					args.sender.send("result");
+				
 			} else {
-				args.sender.send("getSlowniki-result", { error: r});
+				
 			}
 		});}
 	} catch (ex) {
-		args.sender.send("getSlowniki-result", { error: ex });
+		
 	}
 });
 ipcMain.on("parseOceny", (args, oceny,slowniki,userid) => {

@@ -13,14 +13,37 @@ href="./style.css"
     <div class="button" id="button-15" style=""onclick="ChangeUUI('plan')" >PLAN LEKCJI</div>
     <div class="button" id="button-15" style=""onclick="ChangeUUI('zadania')">ZADANIA</div>
     <div class="button" id="button-15" style=""onclick="ChangeUUI('settings')" >USTAWIENIA</div>
+    <div class="button reload-btn" id="button-15" style="color:lime;"onclick="Reload()" >↻</div>
   </div>
   <div class="gwd-div-1sjm">
     <div id="users-users" style="top: 60px;bottom: 0px;position: absolute;color: white; left: 5px;">
+    </div>
+    <div id="button-15" onclick="ChangeUUI('login')"  style="
+    justify-content: center;
+    display: grid;
+    text-align: center;
+    bottom: 0px;
+    position: absolute;
+    width: 100%;
+    padding: unset;
+    left: 0;
+    /* background-color: rgba(0,0,0,0.3); */
+    color: white;
+" class=""><div style="
+    font-size: 40px;
+">+</div>
+    
+    
+    </div>
+    
+    </div>
     </div>
   </div>
   <div class="gwd-div-1v2v gwd-div-15n3"></div>
   <div class="content-container">
     <% include data-ui/oceny.ejs %>
+    <% include login.ejs %>
+    <div class="under-display-container" id="none"></div>
   </div>
 
 </div>

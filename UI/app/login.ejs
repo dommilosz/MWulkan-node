@@ -3,29 +3,30 @@ type="text/css"
 rel="stylesheet"
 href="./style.css"
 />
-<div id="login" class="display-container">
-    <h1>Login</h1>
-    <input type="text" placeholder="TOKEN" id="inp_token" /><br />
-    <input type="text" placeholder="PIN" id="inp_pin" /><br />
-    <input
-        type="text"
-        placeholder="SYMBOL"
-        id="inp_symbol"
-    /><br /><br />
-
-    <input
-        type="button"
-        class="action_button"
-        value="SEND"
-        id="SEND_BTN"
-        onclick="LogIn()"
-    />
-    <input
-        type="button"
-        class="action_button"
-        value="BACK"
-        id="BACK_BTN"
-        onclick="ChangeUI('main')"
-    />
+<div class="under-display-container" id="login">
+    <form>
+        <div class="inp_group">
+          <input type="text" id="inp_Token" class="inp_login" required="">
+          <span class="inp_highlight"></span>
+          <span class="inp_bar"></span>
+          <label class="inp_txt">Token</label>
+        </div>
+        <div class="inp_group">
+          <input type="text" id="inp_PIN" class="inp_login" required="">
+          <span class="inp_highlight"></span>
+          <span class="inp_bar"></span>
+          <label class="inp_txt">PIN</label>
+        </div>
+        <div class="inp_group">
+          <input type="text" id="inp_Symbol"  class="inp_login" required="">
+          <span class="inp_highlight"></span>
+          <span class="inp_bar"></span>
+          <label class="inp_txt">Symbol</label>
+        </div>
+        <div class="button" id="button-15" style="width: 285px;
+        position: relative;
+        left: 0px;" onclick="Login()">Login</div>
+      </form>
 </div>
+
 <script src="./login.js"></script>

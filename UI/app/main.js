@@ -1,6 +1,6 @@
 sel_user = "0#0";
-function getUsers() {
-	ipcRenderer.send("getUsers", JSON_RESP);
+function getUsers(accid) {
+	ipcRenderer.send("getUsers", JSON_RESP, accid);
 }
 function GetTimetable() {
 	getSlowniki();
@@ -17,69 +17,21 @@ function GetTimetable() {
 function getOceny() {
 	getSlowniki();
 	id = sel_user;
-	if (id.length >= 3) ipcRenderer.send("getOceny", JSON_RESP, JSON_USERS, id);
+	if (id.length >= 3)
+		ipcRenderer.send("getOceny", JSON_RESP, JSON_USERS, id);
 }
 function getSlowniki() {
 	id = sel_user;
 	if (id.length >= 3)
 		ipcRenderer.send("getSlowniki", JSON_RESP, JSON_USERS, id);
 }
-ipcRenderer.on("getUsers-result", (e, result) => {
-	if (!result.error) {
-		SuccesLogger.log("getUsers() succes");
-		JSON_USERS = result;
-		USERS_ARR = [];
-		document.getElementById("users").innerHTML =
-			'<option value="-1">WYBIERZ UCZNIA</option>';
-		result.Data.forEach((el, i) => {
-			USERS_ARR.push(el.Imie + " " + el.Nazwisko + " (" + el.Id + ")");
-			document.getElementById("users").innerHTML += `<option value=${i}>${
-				el.Imie + " " + el.Nazwisko + " (" + el.Id + ")"
-			}</select>`;
-		});
-	} else {
-		ErrorLogger.log("ERROR while getUsers()");
-		ErrorLogger.debug(result);
-		if (JSON_RESP.error) {
-			document.getElementById("users").innerHTML = "USERS : ERROR";
-		}
-	}
+ipcRenderer.on("result", (e, result, userid) => {
+	FromFIle();
 });
-ipcRenderer.on("getTimetable-result", (e, result) => {
-	if (!result.error) {
-		SuccesLogger.log("getTimetable() succes");
-		JSON_USERS = result;
-		USERS_ARR = [];
-		result.Data.forEach((el) => {
-			USERS_ARR.push(el.Imie + " " + el.Nazwisko + " (" + el.Id + ")");
-		});
-		document.getElementById("users").innerHTML = USERS_ARR;
-	} else {
-		ErrorLogger.log("ERROR while getTimetable()");
-		ErrorLogger.debug(result);
-		if (JSON_RESP.error) {
-			document.getElementById("users").innerHTML = "USERS : ERROR";
-		}
-	}
-});
-ipcRenderer.on("getOceny-result", (e, result, userid) => {
-	if (!result.error) {
-		SuccesLogger.log("getOceny() succes");
-		OCENY[userid] = result;
-		ParseOceny(userid);
-	} else {
-		ErrorLogger.log("ERROR while getOceny()");
-		ErrorLogger.debug(result);
-	}
-});
-ipcRenderer.on("getSlowniki-result", (e, result, userid) => {
-	if (!result.error) {
-		SuccesLogger.log("getSlowniki() succes");
-		SLOWNIKI[userid] = result;
-	} else {
-		ErrorLogger.log("ERROR while getSlowniki()");
-		ErrorLogger.debug(result);
-	}
+ipcRenderer.on("login-result", (e, accid) => {
+	FromFIle();
+	getUsers(accid);
+	FromFIle();
 });
 ipcRenderer.on("parseOceny-result", (event, result, userid) => {
 	useridf = userid.split("#");
@@ -96,7 +48,7 @@ function ParseOceny(userid) {
 		userid
 	);
 }
-function TryGetTokenFromFIle() {
+function FromFIle() {
 	try {
 		usrs = fs.readdirSync("./Data/auth");
 		usrs.forEach((el) => {
@@ -184,16 +136,12 @@ function TryGetTokenFromFIle() {
 		ErrorLogger.log("ERROR while loading Oceny & Slowniki");
 		ErrorLogger.debug(ex);
 	}
-}
-function LogIn() {
-	token = $("#inp_token")[0].value;
-	pin = $("#inp_pin")[0].value;
-	symbol = $("#inp_symbol")[0].value;
-	ipcRenderer.send("login", token, pin, symbol);
+	Render();
 }
 function OnLoad() {
-	TryGetTokenFromFIle();
+	FromFIle();
 	Render();
+	ChangeUUI("none");
 }
 
 function Render() {
@@ -249,4 +197,14 @@ function SelUser(userid, ignore_rerender) {
 		}
 	});
 	if (!ignore_rerender) Render();
+}
+
+function Reload() {
+	getUsers(sel_user.split("#")[0]);
+	selview = document.querySelector('.under-display-container[style="display: unset;"]').id;
+	if (selview == "oceny") {
+		getOceny();
+	}
+	if (selview == "plan") {
+	}
 }

@@ -1,14 +1,6 @@
-
-ipcRenderer.on('login-result',(e,result)=>
-{
-if(!result.error){
-    SuccesLogger.log('Login succes');
-    JSON_RESP = result;
-    document.getElementById('Logged-text').innerHTML = 'You are logged in!'
-}else{
-    ErrorLogger.log('ERROR while login')
-    ErrorLogger.debug(result)
-    if(JSON_RESP.error){
-    document.getElementById('Logged-text').innerHTML = 'You are not logged in'}
+function Login() {
+	token = $("#inp_Token")[0].value;
+	pin = $("#inp_PIN")[0].value;
+	symbol = $("#inp_Symbol")[0].value;
+	ipcRenderer.send("login", token, pin, symbol);
 }
-})

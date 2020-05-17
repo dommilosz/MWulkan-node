@@ -95,7 +95,7 @@ body {
   position: absolute;
   transform-origin: 56px 186px 0px;
   background-image: none;
-  height: 100%;
+  height:  100%;
   left: -1px;
   top: 0px;
   background-color: rgba(0, 0, 0, 0.44);
@@ -152,6 +152,7 @@ text-align:center;
   padding-left: 15px;
   padding-right: 15px;
   left: 4%;
+  cursor: pointer;
 }
 
 #button-15:hover{
@@ -377,9 +378,181 @@ h3 {
   height: calc(100% - 90px);
   overflow-y: auto;
   overflow-x: hidden;
+  display: flex;
+  justify-content: center;
 }
 .align-middle{
   margin-top: auto;
   margin-bottom: auto;
   display: flex;
+}
+p {
+  margin: 0px;
+}
+h1 {
+  margin: 0px;
+}
+h2 {
+  margin: 0px;
+}
+h3 {
+  margin: 0px;
+}
+
+.gwd-div-ip21 {
+  position: absolute;
+  background-image: none;
+  top: 25%;
+  transform-origin: 174.25px 104.5px 0px;
+  width: 50%;
+  height: 50%;
+  left: 25%;
+  background-color: rgba(0, 0, 0, 0.21);
+}
+.gwd-input-1l5z {
+  position: absolute;
+  width: 348.5px;
+  height: 44px;
+  left: 174.25px;
+  top: 100px;
+  background-image: none;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.form__field {
+  font-family: inherit;
+  width: 100%;
+  border: 0px;
+  outline: 0px;
+  font-size: 1.3rem;
+  padding: 7px 0px;
+  background: transparent;
+  transition: border-color 0.2s ease 0s;
+}
+.form__label {
+  position: absolute;
+  top: 0px;
+  display: block;
+  transition: all 0.2s ease 0s;
+  font-size: 1rem;
+}
+.form__field:focus {
+  font-weight: 700;
+  border-width: 3px;
+  border-image-slice: 1;
+}
+.inp_container {
+  font-family: Roboto;
+  width: 600px;
+  margin: 30px auto 0px;
+  display: block;
+  background: rgb(255, 255, 255);
+  left: 0px;
+  top: 0px;
+  padding: 10px 50px 50px;
+}
+.inp_footer {
+  text-align: center;
+}
+.inp_footer a {
+  color: rgb(83, 178, 200);
+}
+.inp_group {
+  position: relative;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+.inp_login {
+  font-size: 18px;
+  padding: 10px 10px 10px 5px;
+  display: block;
+  width: 300px;
+  border-top: none;
+  border-right: none;
+  border-left: none;
+  border-image: initial;
+  border-bottom: 1px solid rgb(117, 117, 117);
+}
+.inp_login:focus {
+  outline: none;
+}
+.inp_txt {
+  color: white;
+  font-size: 18px;
+  font-weight: normal;
+  position: absolute;
+  pointer-events: none;
+  left: 5px;
+  top: 10px;
+  transition: all 0.2s ease 0s;
+}
+.inp_login:focus ~ .inp_txt, .inp_login:valid ~ .inp_txt {
+  top: -20px;
+  font-size: 14px;
+  color: white;
+}
+.inp_bar {
+  position: relative;
+  display: block;
+  width: 300px;
+}
+.inp_bar::before, .inp_bar::after {
+  content: "";
+  height: 2px;
+  width: 0px;
+  bottom: 1px;
+  position: absolute;
+  background: red;
+  transition: all 0.2s ease 0s;
+}
+.inp_bar::before {
+  left: 50%;
+}
+.inp_bar::after {
+  right: 50%;
+}
+.inp_login:focus ~ .bar::before, .inp_login:focus ~ .bar::after {
+  width: 50%;
+}
+.inp_highlight {
+  position: absolute;
+  height: 60%;
+  width: 100px;
+  top: 25%;
+  left: 0px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.inp_login:focus ~ .highlight {
+  animation: 0.3s ease 0s 1 normal none running inputHighlighter;
+}
+@keyframes inputHighlighter {
+  0% {
+    background: white;
+  }
+  100% {
+    width: 0px;
+    background: transparent;
+  }
+}
+@keyframes inputHighlighter {
+  0% {
+    background: white;
+  }
+  100% {
+    width: 0px;
+    background: transparent;
+  }
+}
+.inp_login{
+  background-color: rgba(0,0,0,0.5);
+  color:white;
+}
+#add-user{
+  background-color: rgba(0,0,0,0.5);
+  top: calc(100% - 60px);
+    bottom: 0px;
+    position: absolute;
+    color: white;
+    height: 60px;
+    width: 100%;
 }
