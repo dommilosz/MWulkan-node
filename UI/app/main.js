@@ -1,3 +1,4 @@
+
 sel_user = "0#0";
 function getUsers(accid) {
 	return actions.getUsers(JSON_RESP, accid);
@@ -17,6 +18,10 @@ function getOceny() {
 function getSlowniki() {
 	id = sel_user;
 	if (id.length >= 3) return actions.getSlowniki(JSON_RESP, JSON_USERS, id);
+}
+function getPodsumowanie() {
+	id = sel_user;
+	if (id.length >= 3) return actions.getPodsumowanie(JSON_RESP,JSON_USERS,sel_user)
 }
 
 function ParseOceny(userid) {
@@ -235,15 +240,30 @@ function Render() {
 						oceny_ilosc += waga;
 						}
 						
-						
-						wpisy += `<div class="oc_wpis" onmouseover="showOcenaDetails(this,true)" onmouseout="showOcenaDetails(this,false)">${
-							el2.Wpis
-						}<div class='ocena_info' style='display:none;'>${JSON.stringify(
+						if(el2.Komentarz==null)el2.Komentarz = '';
+						wpisy += `<div class="oc_wpis" onmouseover="showOcenaDetails(this,true)" onmouseout="showOcenaDetails(this,false)"><div class='oc_wpis_ocena'>${
+							el2.Wpis+el2.Komentarz
+						}</div><div class='ocena_info' style='display:none;'>${JSON.stringify(
 							el2
 						)}</div><div class='ocena_info_popup' style='display:none;'></div> </div>`;
 					});
-					var sredniaocen = (Math.floor(((oceny_suma/oceny_ilosc)*100)+0.5))/100
-					var podsumowanie = `P: ${przewidywana} K: ${koncowa} S: ${sredniaocen}`;
+					var sredniaocen = ((Math.floor(((oceny_suma/oceny_ilosc)*100)+0.5))/100).toString()
+					if(sredniaocen.length==1){
+						sredniaocen = sredniaocen+'.00';
+					}
+					if(sredniaocen.length==3){
+						sredniaocen = sredniaocen+'0';
+					}
+					var podsumowanie = `
+					<div class="oc_wpis" onmouseover="showOcenaPDetails(this,true)" onmouseout="showOcenaPDetails(this,false)" style="background-color: rgba(255, 0, 0, 0);">
+						<div class="oc_wpis_ocena">
+						<div style='color:yellow'>${przewidywana}&nbsp;&nbsp;</div>
+						<div style='color:red'>${koncowa}&nbsp;&nbsp;</div>
+						<div style='color:lime'>${sredniaocen}&nbsp;&nbsp;</div>
+						</div>
+						<div class="ocena_info_popup oc_pop_pods" style="display: none; top: 45px;">
+					</div> </div>
+					`;
 					html += `</tr>`;
 
 					html_oceny += `
@@ -280,9 +300,12 @@ function Reload() {
 		).id;
 		if (selview == "oceny") {
 			getOceny().then((_) => {
-				document.getElementsByClassName("reload-btn")[0].style.color =
+				getPodsumowanie().then(_=>{
+					document.getElementsByClassName("reload-btn")[0].style.color =
 					"lime";
 				FromFIle();
+				})
+				
 			});
 		} else if (selview == "plan") {
 		} else
@@ -304,22 +327,29 @@ function showOcenaDetails(sender, show) {
 		opis_arr2.unshift(opis_arr[opis_arr.length - 1]);
 		opis_arr = opis_arr.slice(0, opis_arr.length - 1);
 	}
-
+	if(wartosc_oceny.length==1){
+		wartosc_oceny = wartosc_oceny+'.00';
+	}
+	if(wartosc_oceny.length==3){
+		wartosc_oceny = wartosc_oceny+'0';
+	}
+	dataoceny = json.DataModyfikacjiTekst;
+	if(json.Komentarz==null)json.Komentarz = '';
 	html = `
 	<div class='ocena_popup' style='display:inherit;'>
 		<div class='oc_popup_item'>OCENA      : <div>${
-			json.Wpis
-		} (${wartosc_oceny})</div></div>
-        <div class='oc_popup_item'>WAGA       : <div>${
-			json.WagaOceny
-		}</div></div>
+			json.Wpis+json.Komentarz
+		} (${wartosc_oceny}) WAGA:${json.WagaOceny}</div></div>
         <div class='oc_popup_item'>KATEGORIA  : <div>${
 			json.IdKategoria.Nazwa
 		}</div></div>
 		<div class='oc_popup_item'>OPIS       : <div class=''>${opis_arr.join(
 			" "
 		)}</div></div>
-		<div class='oc_popup_item'><div class=''>${opis_arr2.join(" ")}</div></div>
+		<div class='oc_popup_item'><div class='opis_1'>${opis_arr2.join(" ")}</div></div>
+		<div class='oc_popup_item'>DATA       : <div>${
+			dataoceny
+		}</div></div>
         <div class='oc_popup_item'>NAUCZYCIEL : <div class=''>${
 			json.IdPracownikM.Imie
 		} ${json.IdPracownikM.Nazwisko}</div></div> </div>
@@ -328,9 +358,11 @@ function showOcenaDetails(sender, show) {
 
 	if (show) {
 		popup.style.display = "grid";
+		sender.style.backgroundColor = 'rgb(255,0,0,0.5)'
 	}
 	if (!show) {
 		popup.style.display = "none";
+		sender.style.backgroundColor = 'rgb(255,0,0,0)'
 	}
 	var bodyRect = document.body.getBoundingClientRect(),
 		elemRect = popup.getBoundingClientRect(),
@@ -340,3 +372,35 @@ function showOcenaDetails(sender, show) {
 		popup.style.top = "-135px";
 	}
 }
+function showOcenaPDetails(sender, show) {
+	var popup = sender.getElementsByClassName("ocena_info_popup")[0];
+	var data = sender.getElementsByClassName('oc_wpis_ocena')[0];
+	var dataarr = data.innerText.split('\n');
+	html = `
+	<div class='ocena_popup' style='display:inherit;'>
+		<div class='oc_popup_item' style='font-size:13px'>PROPONOWANA: &nbsp;<div style='color:yellow;font-size:15px;'>${dataarr[0]}</div></div>
+        <div class='oc_popup_item'>KONCOWA    : &nbsp;<div style='color:red;'>${dataarr[1]}</div></div>
+		<div class='oc_popup_item'>SREDNIA    : &nbsp;<div style='color:lime;'>${dataarr[2]}</div></div>
+		</div>
+		</div>
+    </div>
+	`;
+	popup.innerHTML = html;
+	popup.style.height = '85'
+	if (show) {
+		popup.style.display = "grid";
+		sender.style.backgroundColor = 'rgb(255,0,0,0.5)'
+	}
+	if (!show) {
+		popup.style.display = "none";
+		sender.style.backgroundColor = 'rgb(255,0,0,0)'
+	}
+	var bodyRect = document.body.getBoundingClientRect(),
+		elemRect = popup.getBoundingClientRect(),
+		offset = -(elemRect.top - bodyRect.bottom);
+	popup.style.top = "45px";
+	if (offset <= 90) {
+		popup.style.top = "-90px";
+	}
+}
+

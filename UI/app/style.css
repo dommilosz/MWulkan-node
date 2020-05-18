@@ -567,9 +567,35 @@ h3 {
     text-align: left;
     font-size: 15px;
 }
+.ocena_info_popup.oc_pop_pods{
+  position: absolute;
+  background-color: rgba(157, 32, 32, 1);
+  z-index: 10;
+  width: 100%;
+    left: 0;
+    top: 45px;
+    height: 85px;
+    text-align: left;
+    font-size: 15px;
+}
 .oc_popup_item{
 display: flex;
 }
 .oc_popup_longer{
 font-size: 10px;
+}
+.oc_wpis{
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  display: flex;
+}
+.oc_wpis_ocena {
+  display: flex;
+  font-size: 17px;
+}
+.oc_srednia{
+  color: red;
+  font-weight: bold;
 }
