@@ -1,4 +1,3 @@
-
 sel_user = "0#0";
 function getUsers(accid) {
 	return actions.getUsers(JSON_RESP, accid);
@@ -6,11 +5,14 @@ function getUsers(accid) {
 function GetTimetable() {}
 function getOceny() {
 	return (p = new Promise((resolve, reject) => {
-	getSlowniki().then(_=>{
-		id = sel_user;
-		if (id.length >= 3) actions.getOceny(JSON_RESP, JSON_USERS, id).then(_=>{resolve();});
-	});}))
-	
+		getSlowniki().then((_) => {
+			id = sel_user;
+			if (id.length >= 3)
+				actions.getOceny(JSON_RESP, JSON_USERS, id).then((_) => {
+					resolve();
+				});
+		});
+	}));
 }
 function getSlowniki() {
 	id = sel_user;
@@ -19,18 +21,20 @@ function getSlowniki() {
 
 function ParseOceny(userid) {
 	useridf = userid.split("#");
-	return actions.parseOceny(
-		OCENY[useridf[0]][useridf[1]],
-		SLOWNIKI[useridf[0]][useridf[1]],
-		userid
-	).then(data=>{
-		result = data[0]
-		userid = data[1];
-		useridf = userid.split("#");
-		if (!OCENY_PARSED[useridf[0]]) OCENY_PARSED[useridf[0]] = {};
-		OCENY_PARSED[useridf[0]][useridf[1]] = result;
-		Render(userid);
-	});
+	return actions
+		.parseOceny(
+			OCENY[useridf[0]][useridf[1]],
+			SLOWNIKI[useridf[0]][useridf[1]],
+			userid
+		)
+		.then((data) => {
+			result = data[0];
+			userid = data[1];
+			useridf = userid.split("#");
+			if (!OCENY_PARSED[useridf[0]]) OCENY_PARSED[useridf[0]] = {};
+			OCENY_PARSED[useridf[0]][useridf[1]] = result;
+			Render(userid);
+		});
 }
 function FromFIle() {
 	try {
@@ -120,7 +124,41 @@ function FromFIle() {
 		ErrorLogger.log("ERROR while loading Oceny & Slowniki");
 		ErrorLogger.debug(ex);
 	}
+	try {
+		dir1 = fs.readdirSync("./Data/auth");
+		dir1.forEach((el) => {
+			try {
+				dir2 = fs.readdirSync("./Data/auth/" + el);
+
+				dir2.forEach((el2) => {
+					if (!PODSUMOWANIE[el]) PODSUMOWANIE[el] = [];
+					if (el2.length == 1) {
+						try {
+							PODSUMOWANIE[el][el2] = JSON.parse(
+								fs.readFileSync(
+									"./Data/auth/" +
+										el +
+										"/" +
+										el2 +
+										"/podsumowanie.dt"
+								)
+							);
+						} catch {}
+					}
+				});
+			} catch {}
+		});
+
+		SuccesLogger.log(`Podsumowanie succesfully loaded from file`);
+	} catch (ex) {
+		ErrorLogger.log("ERROR while loading Podsumowanie");
+		ErrorLogger.debug(ex);
+	}
 	Render();
+	setTimeout(() => {
+		Render()
+	}, 500);
+	
 }
 function OnLoad() {
 	FromFIle();
@@ -146,29 +184,80 @@ function Render() {
 		useridf = userid.split("#");
 		oceny_arr = {};
 		html_oceny = ``;
-		OCENY_PARSED[useridf[0]][useridf[1]].Data.forEach((element) => {
-			if (!oceny_arr[element.IdPrzedmiot.Kod])
-				oceny_arr[element.IdPrzedmiot.Kod] = [];
-			oceny_arr[element.IdPrzedmiot.Kod].push(element);
-		});
-		$.each(oceny_arr, function (i, el) {
-			wpisy = "";
-			html += `<tr id='s_${el[0].IdPrzedmiot.Kod}'>`;
-			html += `<td>${el[0].IdPrzedmiot.Nazwa}</td>`;
-			el.forEach((el2) => {
-				wpisy += `<div class="oc_wpis" onmouseover="showOcenaDetails(this,true)" onmouseout="showOcenaDetails(this,false)">${el2.Wpis}<div class='ocena_info' style='display:none;'>${JSON.stringify(el2)}</div><div class='ocena_info_popup' style='display:none;'></div> </div>`;
-			});
-			html += `</tr>`;
+		actions
+			.parsePodsumowanie(
+				PODSUMOWANIE[useridf[0]][useridf[1]],
+				SLOWNIKI[useridf[0]][useridf[1]],
+				userid
+			)
+			.then((pods_parsed) => {
+				OCENY_PARSED[useridf[0]][useridf[1]].Data.forEach((element) => {
+					if (!oceny_arr[element.IdPrzedmiot.Kod])
+						oceny_arr[element.IdPrzedmiot.Kod] = [];
+					oceny_arr[element.IdPrzedmiot.Kod].push(element);
+				});
 
-			html_oceny += `
-		<div class="oc_item" id='s_${el[0].IdPrzedmiot.Kod}'>
-			<div class="oc_item_item small"><div class='align-middle' style='font-size: 15px;'>${el[0].IdPrzedmiot.Nazwa}</div></div>
-			<div class="oc_item_item big" style='justify-content:left;'><pre class='align-middle' style='margin-left: 10px;'>${wpisy}</pre></div>
-			<div class="oc_item_item small"><div class='align-middle'>5</div></div>
-		</div>
-		`;
-		});
-		document.getElementsByClassName("oc_items")[0].innerHTML = html_oceny;
+
+				$.each(oceny_arr, function (i, el) {
+					var przewidywana = "-";
+					var koncowa = "-";
+					var srednia = "-";
+					try {
+						pods_parsed = pods_parsed.Data;
+						if (pods_parsed.OcenyKlasyfikacyjne) {
+							pods_parsed.OcenyKlasyfikacyjne.forEach(
+								(element) => {
+									if (element.IdPrzedmiot.Kod == el) {
+										koncowa = element.OcenaKoncowa;
+									}
+								}
+							);
+						}
+						if (pods_parsed.OcenyPrzewidywane) {
+							pods_parsed.OcenyPrzewidywane.forEach((element) => {
+								if (element.IdPrzedmiot.Kod == el) {
+									koncowa = element.OcenaPrzewidywana;
+								}
+							});
+						}
+					} catch {}
+					
+					wpisy = "";
+					oceny_suma = 0;
+					oceny_ilosc = 0;
+					html += `<tr id='s_${el[0].IdPrzedmiot.Kod}'>`;
+					html += `<td>${el[0].IdPrzedmiot.Nazwa}</td>`;
+					el.forEach((el2) => {
+						var waga = parseFloat( el2.Waga.replace(',','.'));
+						var wartosc_oceny = el2.Wartosc + el2.WagaModyfikatora;
+						if(wartosc_oceny>=1){
+							oceny_suma += (wartosc_oceny)*waga;
+						oceny_ilosc += waga;
+						}
+						
+						
+						wpisy += `<div class="oc_wpis" onmouseover="showOcenaDetails(this,true)" onmouseout="showOcenaDetails(this,false)">${
+							el2.Wpis
+						}<div class='ocena_info' style='display:none;'>${JSON.stringify(
+							el2
+						)}</div><div class='ocena_info_popup' style='display:none;'></div> </div>`;
+					});
+					var sredniaocen = (Math.floor(((oceny_suma/oceny_ilosc)*100)+0.5))/100
+					var podsumowanie = `P: ${przewidywana} K: ${koncowa} S: ${sredniaocen}`;
+					html += `</tr>`;
+
+					html_oceny += `
+			<div class="oc_item" id='s_${el[0].IdPrzedmiot.Kod}'>
+				<div class="oc_item_item small"><div class='align-middle' style='font-size: 15px;'>${el[0].IdPrzedmiot.Nazwa}</div></div>
+				<div class="oc_item_item big" style='justify-content:left;'><pre class='align-middle' style='margin-left: 10px;'>${wpisy}</pre></div>
+				<div class="oc_item_item small"><div class='align-middle'>${podsumowanie}</div></div>
+			</div>
+			`;
+				});
+				document.getElementsByClassName(
+					"oc_items"
+				)[0].innerHTML = html_oceny;
+			});
 	} catch {}
 }
 
@@ -184,62 +273,70 @@ function SelUser(userid, ignore_rerender) {
 }
 
 function Reload() {
-	document.getElementsByClassName('reload-btn')[0].style.color = 'orange';
-	getUsers(sel_user.split("#")[0]).then(_=>{
-		
+	document.getElementsByClassName("reload-btn")[0].style.color = "orange";
+	getUsers(sel_user.split("#")[0]).then((_) => {
 		selview = document.querySelector(
 			'.under-display-container[style="display: unset;"]'
 		).id;
 		if (selview == "oceny") {
-			getOceny().then(_=>{
-				document.getElementsByClassName('reload-btn')[0].style.color = 'lime';
-				FromFIle()
+			getOceny().then((_) => {
+				document.getElementsByClassName("reload-btn")[0].style.color =
+					"lime";
+				FromFIle();
 			});
-		}else
-		if (selview == "plan") {
-		}else document.getElementsByClassName('reload-btn')[0].style.color = 'lime';
+		} else if (selview == "plan") {
+		} else
+			document.getElementsByClassName("reload-btn")[0].style.color =
+				"lime";
 	});
-	
 }
-function showOcenaDetails(sender,show){
-	var details = sender.getElementsByClassName('ocena_info')[0];
-	var json = JSON.parse( details.innerHTML);
-	var popup = sender.getElementsByClassName('ocena_info_popup')[0];
-	if(json.WagaModyfikatora==null)
-	json.WagaModyfikatora = 0;
+function showOcenaDetails(sender, show) {
+	var details = sender.getElementsByClassName("ocena_info")[0];
+	var json = JSON.parse(details.innerHTML);
+	var popup = sender.getElementsByClassName("ocena_info_popup")[0];
+	if (json.WagaModyfikatora == null) json.WagaModyfikatora = 0;
 	var wartosc_oceny = json.Wartosc + json.WagaModyfikatora;
-	if(!json.Opis||json.Opis=='')json.Opis = '-';
-	if(!json.IdKategoria.Nazwa)json.IdKategoria.Nazwa = '-';
-	opis_arr =json.Opis.split(' ');
+	if (!json.Opis || json.Opis == "") json.Opis = "-";
+	if (!json.IdKategoria.Nazwa) json.IdKategoria.Nazwa = "-";
+	opis_arr = json.Opis.split(" ");
 	opis_arr2 = [];
-	while(opis_arr.join(' ').length>29){
-		opis_arr2.unshift(opis_arr[opis_arr.length-1])
-		opis_arr = opis_arr.slice(0,opis_arr.length-1);
+	while (opis_arr.join(" ").length > 29) {
+		opis_arr2.unshift(opis_arr[opis_arr.length - 1]);
+		opis_arr = opis_arr.slice(0, opis_arr.length - 1);
 	}
 
 	html = `
 	<div class='ocena_popup' style='display:inherit;'>
-		<div class='oc_popup_item'>OCENA      : <div>${json.Wpis} (${wartosc_oceny})</div></div>
-        <div class='oc_popup_item'>WAGA       : <div>${json.WagaOceny}</div></div>
-        <div class='oc_popup_item'>KATEGORIA  : <div>${json.IdKategoria.Nazwa}</div></div>
-		<div class='oc_popup_item'>OPIS       : <div class=''>${opis_arr.join(' ')}</div></div>
-		<div class='oc_popup_item'><div class=''>${opis_arr2.join(' ')}</div></div>
-        <div class='oc_popup_item'>NAUCZYCIEL : <div class=''>${json.IdPracownikM.Imie} ${json.IdPracownikM.Nazwisko}</div></div> </div>
+		<div class='oc_popup_item'>OCENA      : <div>${
+			json.Wpis
+		} (${wartosc_oceny})</div></div>
+        <div class='oc_popup_item'>WAGA       : <div>${
+			json.WagaOceny
+		}</div></div>
+        <div class='oc_popup_item'>KATEGORIA  : <div>${
+			json.IdKategoria.Nazwa
+		}</div></div>
+		<div class='oc_popup_item'>OPIS       : <div class=''>${opis_arr.join(
+			" "
+		)}</div></div>
+		<div class='oc_popup_item'><div class=''>${opis_arr2.join(" ")}</div></div>
+        <div class='oc_popup_item'>NAUCZYCIEL : <div class=''>${
+			json.IdPracownikM.Imie
+		} ${json.IdPracownikM.Nazwisko}</div></div> </div>
 	`;
 	popup.innerHTML = html;
-	
-	if(show){
-		popup.style.display = 'grid';
+
+	if (show) {
+		popup.style.display = "grid";
 	}
-	if(!show){
-		popup.style.display = 'none';
+	if (!show) {
+		popup.style.display = "none";
 	}
 	var bodyRect = document.body.getBoundingClientRect(),
-    elemRect = popup.getBoundingClientRect(),
-	offset   = -(elemRect.top - bodyRect.bottom)
-	popup.style.top = '45px';
-	if(offset<=135){
-		popup.style.top = '-135px';
+		elemRect = popup.getBoundingClientRect(),
+		offset = -(elemRect.top - bodyRect.bottom);
+	popup.style.top = "45px";
+	if (offset <= 135) {
+		popup.style.top = "-135px";
 	}
-
 }

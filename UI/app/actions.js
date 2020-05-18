@@ -90,12 +90,11 @@ module.exports.getTimetable = function (json, userjson, date, id) {
 					);
 					FromFIle();
 					resolve();
-					
 				} else {
 				}
 			});
 		} catch (ex) {
-			reject();
+			reject(ex);
 		}
 	}));
 };
@@ -133,7 +132,7 @@ module.exports.getOceny = function (json, userjson, id) {
 				}
 			});
 		} catch (ex) {
-			reject();
+			reject(ex);
 		}
 	}));
 };
@@ -178,10 +177,47 @@ module.exports.getSlowniki = function (json, usersjson, userid) {
 				});
 			}
 		} catch (ex) {
-			reject();
+			reject(ex);
 		}
 	}));
 };
+
+module.exports.getPodsumowanie = function (json, usersjson, userid) {
+	return (p = new Promise((resolve, reject) => {
+		try {
+			idf = userid.split("#");
+			seljson = json[idf[0]];
+			selusersjson = usersjson[idf[0]];
+			API.GetPodsumowanie(seljson, selusersjson, idf[1]).then((r) => {
+				if (r.TimeKey) {
+					try {
+						fs.mkdirSync("./Data/");
+					} catch {}
+					try {
+						fs.mkdirSync("./Data/auth");
+					} catch {}
+					try {
+						fs.mkdirSync(`./Data/auth/${idf[0]}`);
+					} catch {}
+					try {
+						fs.mkdirSync(`./Data/auth/${idf[0]}/${idf[1]}`);
+					} catch {}
+					fs.writeFileSync(
+						`./Data/auth/${idf[0]}/${idf[1]}/podsumowanie.dt`,
+						JSON.stringify(r),
+						function () {}
+					);
+					FromFIle();
+					resolve();
+				} else {
+				}
+			});
+		} catch (ex) {
+			reject(ex);
+		}
+	}));
+};
+
 module.exports.parseOceny = function (oceny, slowniki, userid) {
 	return (p = new Promise((resolve, reject) => {
 		data = oceny;
@@ -208,6 +244,32 @@ module.exports.parseOceny = function (oceny, slowniki, userid) {
 				}
 			});
 		});
-		resolve([data,userid]);
+		resolve([data, userid]);
+	}));
+};
+
+module.exports.parsePodsumowanie = function (podsumowanie, slowniki, userid) {
+	return (p = new Promise((resolve, reject) => {
+		data = podsumowanie;
+		slowniki = slowniki.Data;
+		try {
+			data.Data.OcenyPrzewidywane.forEach((el) => {
+				slowniki.Przedmioty.forEach((el2) => {
+					if (el2.Id == el["IdPrzedmiot"]) {
+						el["IdPrzedmiot"] = el2;
+					}
+				});
+			});
+		} catch {}
+		try {
+			data.Data.OcenyKlasyfikacyjne.forEach((el) => {
+				slowniki.Przedmioty.forEach((el2) => {
+					if (el2.Id == el["IdPrzedmiot"]) {
+						el["IdPrzedmiot"] = el2;
+					}
+				});
+			});
+		} catch {}
+		resolve(data);
 	}));
 };

@@ -17,6 +17,7 @@ Timetables =[];
 SLOWNIKI = [];
 OCENY = [];
 OCENY_PARSED = [];
+PODSUMOWANIE = [];
 
 function ChangeUI(UI){
     document.querySelectorAll('.display-container').forEach(e => {

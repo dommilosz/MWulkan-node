@@ -198,3 +198,32 @@ module.exports.GetSlowniki = function GetSlowniki(json, usersjson, userid) {
 	}));
 };
 
+module.exports.GetPodsumowanie = function GetPodsumowanie(json, usersjson, userid) {
+	return (p = new Promise((resolve, reject) => {
+		seluser = usersjson.Data[userid];
+		API_URL = json.TokenCert.AdresBazowyRestApi;
+		REQ_URL = `${API_URL}/${seluser.JednostkaSprawozdawczaSymbol}/mobile-api/Uczen.v3.Uczen/OcenyPodsumowanie`;
+		BODY = {
+			IdOkresKlasyfikacyjny: seluser.IdOkresKlasyfikacyjny,
+			IdUczen: seluser.Id,
+			RemoteMobileTimeKey: this.Unix_time(),
+			TimeKey: this.Unix_time()-1,
+			RequestId: this.UUID(),
+			RemoteMobileAppVersion: "18.4.1.388",
+			RemoteMobileAppName: "VULCAN-Android-ModulUcznia"
+		
+		};
+		this.SignContent(json, BODY).then((signed) => {
+			HEADERS = [
+				["RequestSignatureValue", `${signed}`],
+				["User-Agent", "MobileUserAgent"],
+				["RequestCertificateKey", `${json.TokenCert.CertyfikatKlucz}`],
+				["Content-Type", "application/json; charset=UTF-8"],
+			];
+
+			resp = this.REQ_POST(REQ_URL, BODY, HEADERS);
+			resolve(resp);
+		});
+	}));
+};
+
