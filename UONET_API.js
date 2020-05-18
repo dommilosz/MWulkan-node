@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
 const XMLHttpRequest = require("./XMLHttpRequest").XMLHttpRequest;
-const signer = require("./Signer/signer-get");
+signer = require("./Signer/signer-get");
+module.exports.signer = signer;
 RoutingRules = [];
 
 module.exports.GetRoutingRules = function GetRoutingRules(token) {

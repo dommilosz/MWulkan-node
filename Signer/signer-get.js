@@ -6,7 +6,13 @@ module.exports.GetSign = function (token, content) {
             const browser = await puppeteer.launch();
             const page = await browser.newPage();
             var path = require('path');
-            var appDir = path.dirname(require.main.filename);
+            var appDir = '';
+            if(!require.main){
+                var appDir =window.__dirname.split('\\').slice(0,window.__dirname.split('\\').length-2).join('\\')
+            }else{
+                var appDir = path.dirname(require.main.filename);
+            }
+            
             await page.goto(`${appDir}/Signer/signer.html?p=${pass}&c=${token}&b=${JSON.stringify(content)}`);
             await page.waitForSelector('#LOADED')
             body = await page.evaluate(()=>{

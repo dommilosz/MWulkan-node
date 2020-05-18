@@ -4,7 +4,6 @@ const {ipcMain} = require('electron')
 const path = require('path')
 const ejs = require('ejs')
 const ejse = require('ejs-electron')
-require('./actions')
 
 function createWindow () {
   // Create the browser window.

@@ -1,52 +1,36 @@
+
 sel_user = "0#0";
 function getUsers(accid) {
-	ipcRenderer.send("getUsers", JSON_RESP, accid);
+	return actions.getUsers(JSON_RESP, accid);
 }
-function GetTimetable() {
-	getSlowniki();
-	id = document.getElementById("users").value;
-	if (id >= 0)
-		ipcRenderer.send(
-			"getTimetable",
-			JSON_RESP,
-			JSON_USERS,
-			"2020-05-11",
-			id
-		);
-}
+function GetTimetable() {}
 function getOceny() {
-	getSlowniki();
-	id = sel_user;
-	if (id.length >= 3)
-		ipcRenderer.send("getOceny", JSON_RESP, JSON_USERS, id);
+	return (p = new Promise((resolve, reject) => {
+	getSlowniki().then(_=>{
+		id = sel_user;
+		if (id.length >= 3) actions.getOceny(JSON_RESP, JSON_USERS, id).then(_=>{resolve();});
+	});}))
+	
 }
 function getSlowniki() {
 	id = sel_user;
-	if (id.length >= 3)
-		ipcRenderer.send("getSlowniki", JSON_RESP, JSON_USERS, id);
+	if (id.length >= 3) return actions.getSlowniki(JSON_RESP, JSON_USERS, id);
 }
-ipcRenderer.on("result", (e, result, userid) => {
-	FromFIle();
-});
-ipcRenderer.on("login-result", (e, accid) => {
-	FromFIle();
-	getUsers(accid);
-	FromFIle();
-});
-ipcRenderer.on("parseOceny-result", (event, result, userid) => {
-	useridf = userid.split("#");
-	if (!OCENY_PARSED[useridf[0]]) OCENY_PARSED[useridf[0]] = {};
-	OCENY_PARSED[useridf[0]][useridf[1]] = result;
-	Render(userid);
-});
+
 function ParseOceny(userid) {
 	useridf = userid.split("#");
-	ipcRenderer.send(
-		"parseOceny",
+	return actions.parseOceny(
 		OCENY[useridf[0]][useridf[1]],
 		SLOWNIKI[useridf[0]][useridf[1]],
 		userid
-	);
+	).then(data=>{
+		result = data[0]
+		userid = data[1];
+		useridf = userid.split("#");
+		if (!OCENY_PARSED[useridf[0]]) OCENY_PARSED[useridf[0]] = {};
+		OCENY_PARSED[useridf[0]][useridf[1]] = result;
+		Render(userid);
+	});
 }
 function FromFIle() {
 	try {
@@ -172,7 +156,7 @@ function Render() {
 			html += `<tr id='s_${el[0].IdPrzedmiot.Kod}'>`;
 			html += `<td>${el[0].IdPrzedmiot.Nazwa}</td>`;
 			el.forEach((el2) => {
-				wpisy += `<div class="oc_wpis">${el2.Wpis} </div>`;
+				wpisy += `<div class="oc_wpis" onmouseover="showOcenaDetails(this,true)" onmouseout="showOcenaDetails(this,false)">${el2.Wpis}<div class='ocena_info' style='display:none;'>${JSON.stringify(el2)}</div><div class='ocena_info_popup' style='display:none;'></div> </div>`;
 			});
 			html += `</tr>`;
 
@@ -200,11 +184,62 @@ function SelUser(userid, ignore_rerender) {
 }
 
 function Reload() {
-	getUsers(sel_user.split("#")[0]);
-	selview = document.querySelector('.under-display-container[style="display: unset;"]').id;
-	if (selview == "oceny") {
-		getOceny();
+	document.getElementsByClassName('reload-btn')[0].style.color = 'orange';
+	getUsers(sel_user.split("#")[0]).then(_=>{
+		
+		selview = document.querySelector(
+			'.under-display-container[style="display: unset;"]'
+		).id;
+		if (selview == "oceny") {
+			getOceny().then(_=>{
+				document.getElementsByClassName('reload-btn')[0].style.color = 'lime';
+				FromFIle()
+			});
+		}else
+		if (selview == "plan") {
+		}else document.getElementsByClassName('reload-btn')[0].style.color = 'lime';
+	});
+	
+}
+function showOcenaDetails(sender,show){
+	var details = sender.getElementsByClassName('ocena_info')[0];
+	var json = JSON.parse( details.innerHTML);
+	var popup = sender.getElementsByClassName('ocena_info_popup')[0];
+	if(json.WagaModyfikatora==null)
+	json.WagaModyfikatora = 0;
+	var wartosc_oceny = json.Wartosc + json.WagaModyfikatora;
+	if(!json.Opis||json.Opis=='')json.Opis = '-';
+	if(!json.IdKategoria.Nazwa)json.IdKategoria.Nazwa = '-';
+	opis_arr =json.Opis.split(' ');
+	opis_arr2 = [];
+	while(opis_arr.join(' ').length>29){
+		opis_arr2.unshift(opis_arr[opis_arr.length-1])
+		opis_arr = opis_arr.slice(0,opis_arr.length-1);
 	}
-	if (selview == "plan") {
+
+	html = `
+	<div class='ocena_popup' style='display:inherit;'>
+		<div class='oc_popup_item'>OCENA      : <div>${json.Wpis} (${wartosc_oceny})</div></div>
+        <div class='oc_popup_item'>WAGA       : <div>${json.WagaOceny}</div></div>
+        <div class='oc_popup_item'>KATEGORIA  : <div>${json.IdKategoria.Nazwa}</div></div>
+		<div class='oc_popup_item'>OPIS       : <div class=''>${opis_arr.join(' ')}</div></div>
+		<div class='oc_popup_item'><div class=''>${opis_arr2.join(' ')}</div></div>
+        <div class='oc_popup_item'>NAUCZYCIEL : <div class=''>${json.IdPracownikM.Imie} ${json.IdPracownikM.Nazwisko}</div></div> </div>
+	`;
+	popup.innerHTML = html;
+	
+	if(show){
+		popup.style.display = 'grid';
 	}
+	if(!show){
+		popup.style.display = 'none';
+	}
+	var bodyRect = document.body.getBoundingClientRect(),
+    elemRect = popup.getBoundingClientRect(),
+	offset   = -(elemRect.top - bodyRect.bottom)
+	popup.style.top = '45px';
+	if(offset<=135){
+		popup.style.top = '-135px';
+	}
+
 }
