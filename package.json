@@ -15,7 +15,7 @@
     "crypto": "^1.0.1",
     "ejs": "^3.1.2",
     "ejs-electron": "^2.0.3",
-    "electron": "^8.2.5",
+    "electron": "^8.5.1",
     "jquery": "^3.5.1",
     "native-crypto": "^1.8.1",
     "node-forge": "^0.9.1",
